@@ -10,16 +10,14 @@ RUN npm run build
 FROM maven:3.9-eclipse-temurin-17 AS backend-build
 WORKDIR /app/backend
 
-# Copy the frontend build to the backend's static directory
-# This allows Spring Boot to serve the React app
+# Copy frontend build into Spring Boot static folder
 RUN mkdir -p src/main/resources/static
 COPY --from=frontend-build /app/frontend/dist src/main/resources/static
 
-# Copy pom and fetch dependencies
+# Copy backend files
 COPY qms_backend/pom.xml .
 RUN mvn dependency:go-offline
 
-# Copy source and build
 COPY qms_backend/src ./src
 RUN mvn clean package -DskipTests
 
@@ -27,11 +25,8 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
-# Copy the built jar
 COPY --from=backend-build /app/backend/target/*.jar app.jar
 
-# Render uses the PORT environment variable
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=$PORT -jar app.jar"]
