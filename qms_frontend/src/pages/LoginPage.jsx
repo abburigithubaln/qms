@@ -37,146 +37,124 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4 sm:p-6">
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-teal-100 blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-50 blur-[100px]" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-[#0d1117] via-[#0f2027] to-[#0a3d62] text-white font-sans overflow-hidden selection:bg-teal-500/30 relative">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMzIsIDIyNywgMTc4LCAwLjE1KSIvPjwvc3ZnPg==')] opacity-50" />
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10 p-8 sm:p-10 rounded-3xl bg-[#0a0e1a]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)]"
       >
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-teal-600 text-white shadow-lg shadow-teal-600/20 mb-4">
-            <ShieldCheck size={32} />
+        {/* Logo */}
+        <div className="flex flex-col items-center justify-center gap-4 mb-10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/20 to-teal-500/5 border border-teal-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(20,184,166,0.2)]">
+            <ShieldCheck className="w-8 h-8 text-teal-400" />
           </div>
-          <h1 className="text-3xl font-bold text-black tracking-tight">QMS Portal</h1>
-          <p className="text-gray-500 mt-2">Sign in as Admin or Interviewer</p>
+          <div className="text-center">
+            <span className="text-3xl font-bold tracking-tight text-white block mb-2">QMS Portal</span>
+            <p className="text-gray-400 text-sm">Sign in to your account to continue</p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-          <div className="h-2 bg-teal-600 w-full" />
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -10 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -10 }}
+              className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium mb-6 flex items-center gap-2 overflow-hidden"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="p-8 sm:p-10 space-y-6">
-            <AnimatePresence mode="wait">
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-red-100"
-                >
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-1.5 group">
-              <div className="relative">
-                <AnimatePresence>
-                  {!username && (
-                    <motion.label
-                      initial={{ opacity: 0, x: 0 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      htmlFor="username"
-                      className="absolute left-11 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-all duration-200"
-                    >
-                      Username or Email
-                    </motion.label>
-                  )}
-                </AnimatePresence>
-                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${username ? 'text-teal-600' : 'text-gray-400'}`}>
-                  <User size={20} />
-                </div>
-                <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/5 outline-none transition-all duration-300"
-                  required
-                  autoComplete="username"
-                />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Username or Email</label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-teal-400 transition-colors">
+                <User className="w-5 h-5" />
               </div>
+              <input
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
+                required
+                autoComplete="username"
+              />
             </div>
+          </div>
 
-            <div className="space-y-1.5 group">
-              <div className="relative">
-                <AnimatePresence>
-                  {!password && (
-                    <motion.label
-                      initial={{ opacity: 0, x: 0 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      htmlFor="password"
-                      className="absolute left-11 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-all duration-200"
-                    >
-                      Password
-                    </motion.label>
-                  )}
-                </AnimatePresence>
-                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${password ? 'text-teal-600' : 'text-gray-400'}`}>
-                  <Lock size={20} />
-                </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl text-black focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/5 outline-none transition-all duration-300"
-                  required
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-teal-600 transition-colors p-1"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">Password</label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-teal-400 transition-colors">
+                <Lock className="w-5 h-5" />
               </div>
-            </div>
-
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center space-x-2 cursor-pointer group">
-                <div className="relative flex items-center">
-                  <input type="checkbox" className="peer hidden" />
-                  <div className="w-5 h-5 border-2 border-gray-200 rounded-md bg-white peer-checked:bg-teal-600 peer-checked:border-teal-600 transition-all duration-200" />
-                  <div className="absolute inset-0 flex items-center justify-center text-white opacity-0 peer-checked:opacity-100 transition-opacity">
-                    <svg size={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="20 6 9 17 4 12" /></svg>
-                  </div>
-                </div>
-                <span className="text-sm text-gray-600 font-medium">Remember me</span>
-              </label>
-              <button type="button" className="text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors">
-                Forgot password?
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full pl-12 pr-12 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:bg-white/10 focus:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
+                required
+                autoComplete="current-password"
+              />
+              <button 
+                type="button" 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-teal-400 transition-colors p-1"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+          </div>
 
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full bg-teal-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-teal-600/30 hover:bg-teal-700 transition-all duration-300 flex items-center justify-center space-x-3 disabled:opacity-70 disabled:cursor-not-allowed group"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </motion.button>
-          </form>
-        </div>
+          <div className="flex items-center justify-between pt-2">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative flex items-center">
+                <input type="checkbox" className="peer hidden" />
+                <div className="w-5 h-5 border border-white/20 rounded bg-white/5 peer-checked:bg-teal-500 peer-checked:border-teal-500 transition-all flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+              </div>
+              <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
+            </label>
+            <button type="button" className="text-sm font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+              Forgot password?
+            </button>
+          </div>
 
-        <p className="text-center text-gray-400 mt-10 text-sm">
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={loading}
+            className="w-full mt-4 bg-gradient-to-r from-teal-500 to-emerald-400 text-[#0a0e1a] py-3.5 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-[#0a0e1a]/30 border-t-[#0a0e1a] rounded-full animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <>
+                Sign In 
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
+          </motion.button>
+        </form>
+
+        <p className="text-center text-gray-600 text-xs mt-10">
           Protected by SecureLayer 2.0 &bull; &copy; 2026 QMS Systems
         </p>
       </motion.div>
