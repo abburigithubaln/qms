@@ -1,30 +1,29 @@
 package com.qms.queue.service.ServiceImpl;
 
 import com.qms.queue.service.EmailService;
-import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
 public class EmailServiceImpl implements EmailService {
 
-    private final JavaMailSender mailSender;
-    private final String fromAddress;
-    private final String fromName;
+    @Value("${BREVO_API_KEY}")
+    private String apiKey;
 
-    public EmailServiceImpl(
-            JavaMailSender mailSender,
-            @Value("${app.mail.from}") String fromAddress,
-            @Value("${app.mail.from-name}") String fromName) {
-        this.mailSender = mailSender;
-        this.fromAddress = fromAddress;
-        this.fromName = fromName;
-    }
+    @Value("${app.mail.from}")
+    private String fromAddress;
+
+    @Value("${app.mail.from-name}")
+    private String fromName;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
     @Override
     @Async("emailTaskExecutor")
@@ -34,20 +33,42 @@ public class EmailServiceImpl implements EmailService {
             return;
         }
         try {
-            log.info("Sending email → to: '{}', subject: '{}'", to, subject);
+            log.info("Sending email via Brevo API → to: '{}', subject: '{}'", to, subject);
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
-            helper.setFrom(fromAddress, fromName);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", apiKey);
 
-            mailSender.send(message);
-            log.info("Email sent successfully to: '{}'", to);
+            // Escape the HTML body for safe JSON embedding
+            String escapedBody = body
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "");
+
+            String escapedSubject = subject
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"");
+
+            String payload = String.format(
+                    "{\"sender\":{\"name\":\"%s\",\"email\":\"%s\"}," +
+                    "\"to\":[{\"email\":\"%s\"}]," +
+                    "\"subject\":\"%s\"," +
+                    "\"htmlContent\":\"%s\"}",
+                    fromName, fromAddress, to, escapedSubject, escapedBody
+            );
+
+            HttpEntity<String> request = new HttpEntity<>(payload, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(BREVO_API_URL, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Email sent successfully via Brevo API to: '{}'", to);
+            } else {
+                log.error("Brevo API returned non-2xx status: {} for recipient: '{}'", response.getStatusCode(), to);
+            }
 
         } catch (Exception e) {
-            log.error("SMTP error sending email to '{}' [subject: {}]: {}", to, subject, e.getMessage(), e);
+            log.error("Brevo API error sending email to '{}' [subject: {}]: {}", to, subject, e.getMessage(), e);
         }
     }
 }
