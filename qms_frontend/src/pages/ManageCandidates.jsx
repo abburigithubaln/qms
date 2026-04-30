@@ -109,7 +109,8 @@ export default function ManageCandidates() {
     }, [fetchCandidates])
 
     useEffect(() => {
-        setQrUrl(`${window.location.origin}/api/public/qr?t=${Date.now()}`)
+        const apiBase = import.meta.env.VITE_API_URL || ''
+        setQrUrl(`${apiBase}/api/public/qr?t=${Date.now()}`)
     }, [])
 
     const showMsg = (type, text) => {
